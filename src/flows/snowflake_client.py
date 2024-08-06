@@ -5,12 +5,9 @@ import logging
 class SnowflakeClient:
     def __init__(
         self, account: str, username: str, password: str,
-        database: str, warehouse: str, logger: logging.Logger
+        database: str, warehouse: str
     ):
-        self.logger = logger
-
         conn_str = f'snowflake://{username}:{password}@{account}/{database}?warehouse={warehouse}&role=SYSADMIN'
-        self.logger.debug(conn_str)
         self.engine = create_engine(
             conn_str
         )

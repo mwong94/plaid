@@ -74,9 +74,6 @@ def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
 
     df = pd.DataFrame(institutions)
 
-    logger.debug(json.dumps(institutions[:2]))
-    logger.debug(len(institutions))
-
     return df
 
 
@@ -87,8 +84,7 @@ def upload_df(df: pd.DataFrame, schema: str, table: str, if_exists: str = 'appen
         os.getenv('SNOWFLAKE_USERNAME'),
         os.getenv('SNOWFLAKE_PASSWORD'),
         os.getenv('SNOWFLAKE_DATABASE'),
-        os.getenv('SNOWFLAKE_WAREHOUSE'),
-        logger=get_run_logger()
+        os.getenv('SNOWFLAKE_WAREHOUSE')
     )
     snowflake_client.upload_df(df, 'raw', 'institutions', 'append')
 
