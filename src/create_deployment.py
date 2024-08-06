@@ -11,7 +11,7 @@ if __name__ == '__main__':
         name='plaid-deployment',
         work_pool_name='default-work-pool',
         schedule=CronSchedule(
-            cron='0 0 * * 0', # crontab.guru: “At 00:00 on Sunday.”
+            cron='0 0 1 * *',
             timezone='US/Pacific'
         )
     )
