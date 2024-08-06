@@ -19,6 +19,14 @@ from plaid.model.institutions_get_request_options import InstitutionsGetRequestO
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
 
+
+def cast_to_string(v):
+    if isinstance(v, list|dict):
+        return json.dumps(v)
+    else:
+        return v
+
+
 @task(retries=2)
 def create_client() -> plaid_api.PlaidApi:
     logger = get_run_logger()
@@ -63,7 +71,6 @@ def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
 
             logger.debug(f'{len(institutions)} / {total} (offset: {offset})')
             offset = len(institutions)
-        break
 
     df = pd.DataFrame(institutions)
 
@@ -73,7 +80,7 @@ def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
     return df
 
 
-@task(retries=2)
+@task
 def upload_df(df: pd.DataFrame, schema: str, table: str, if_exists: str = 'append') -> None:
     snowflake_client = SnowflakeClient(
         os.getenv('SNOWFLAKE_ACCOUNT'),
@@ -95,11 +102,17 @@ def get_institutions() -> pd.DataFrame:
 
     df = _get_institutions(client)
     df['loaded_at'] = datetime.utcnow()
-
-    upload_df(df, 'raw', 'institutions', 'append')
+    for col in df.columns:
+        df[col] = df[col].apply(cast_to_string)
+    df = df[['institution_id', 'name', 'products', 'country_codes', 'routing_numbers', 'oauth', 'loaded_at']]
+    
+    upload_df(
+        df,
+        'raw', 'institutions', 'append'
+        )
 
     create_markdown_artifact(
-        key='institution_md',
+        key='institutions',
         markdown=df.sample(10).to_markdown(),
         description='Plaid institutions sample'
     )
