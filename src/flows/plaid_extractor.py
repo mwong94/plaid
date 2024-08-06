@@ -4,6 +4,7 @@ import os
 import json
 import pandas as pd
 from utils import RateLimiter
+from time import sleep
 
 import plaid
 from plaid.api import plaid_api
