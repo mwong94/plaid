@@ -8,8 +8,8 @@ class SnowflakeClient:
         database: str, warehouse: str, logger: logging.Logger
     ):
         self.logger = logger
-        
-        conn_str = f'snowflake://{username}:{password}@{account}/{database}?warehouse={warehouse}'
+
+        conn_str = f'snowflake://{username}:{password}@{account}/{database}?warehouse={warehouse}&role=SYSADMIN'
         self.logger.debug(conn_str)
         self.engine = create_engine(
             conn_str
@@ -20,5 +20,7 @@ class SnowflakeClient:
             name=table,
             con=self.engine,
             schema=schema,
-            if_exists=if_exists
+            if_exists=if_exists,
+            index=False,
+            chunksize=1000
         )
