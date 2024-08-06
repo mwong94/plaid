@@ -19,3 +19,11 @@ services:
       - /data/plaid/prefect:/home/prefect
     ports:
       - 4200:4200
+  
+  prefect-worker-1:
+    container_name: prefect-worker-1
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: prefect worker start --pool default-work-pool
+    env_file: .env
