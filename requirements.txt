@@ -1,1 +1,3 @@
 prefect>=3.0.0rc1
+plaid-python==24.0.0
+pandas==2.2.2
