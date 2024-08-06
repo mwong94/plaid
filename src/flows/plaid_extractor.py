@@ -15,7 +15,7 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
 
 @task(retries=2)
-def create_client() -> plaid_api.PlaidAPI:
+def create_client() -> plaid_api.PlaidApi:
     logger = get_run_logger()
     logger.debug('create_client()')
 
