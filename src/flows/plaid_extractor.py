@@ -78,7 +78,7 @@ def get_institutions() -> pd.DataFrame:
 
     create_table_artifact(
         key='institutions',
-        table=df.to_dict(),
+        table=df.to_dict(orient='records'),
         description='Plaid institutions'
     )
     create_markdown_artifact(
