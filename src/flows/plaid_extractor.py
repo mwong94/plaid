@@ -4,7 +4,10 @@ from prefect.artifacts import create_table_artifact, create_markdown_artifact
 import os
 import json
 import pandas as pd
+from datetime import datetime
+
 from utils import RateLimiter
+from snowflake_client import SnowflakeClient
 
 import plaid
 from plaid.api import plaid_api
@@ -37,7 +40,7 @@ def create_client() -> plaid_api.PlaidApi:
     return plaid_api.PlaidApi(api_client)
 
 
-@task
+@task(retries=5)
 def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
     logger = get_run_logger()
     logger.debug('_get_institutions()')
@@ -60,6 +63,7 @@ def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
 
             logger.debug(f'{len(institutions)} / {total} (offset: {offset})')
             offset = len(institutions)
+        break
 
     df = pd.DataFrame(institutions)
 
@@ -68,23 +72,40 @@ def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
 
     return df
 
+
+@task(retries=2)
+def upload_df(df: pd.DataFrame, schema: str, table: str, if_exists: str = 'append') -> None:
+    snowflake_client = SnowflakeClient(
+        os.getenv('SNOWFLAKE_ACCOUNT'),
+        os.getenv('SNOWFLAKE_USERNAME'),
+        os.getenv('SNOWFLAKE_PASSWORD'),
+        os.getenv('SNOWFLAKE_DATABASE'),
+        os.getenv('SNOWFLAKE_WAREHOUSE'),
+        logger=get_run_logger()
+    )
+    snowflake_client.upload_df(df, 'raw', 'institutions', 'append')
+
+
 @flow
 def get_institutions() -> pd.DataFrame:
     logger = get_run_logger()
     logger.debug('get_institutions()')
 
     client = create_client()
-    df = _get_institutions(client)
 
-    create_table_artifact(
-        key='institutions',
-        table=df.to_dict(orient='records'),
-        description='Plaid institutions'
-    )
+    df = _get_institutions(client)
+    df['loaded_at'] = datetime.utcnow()
+
+    upload_df(df, 'raw', 'institutions', 'append')
+
     create_markdown_artifact(
-        key='institutions',
+        key='institution_md',
         markdown=df.sample(10).to_markdown(),
-        description='Plaid institutions MD sample'
+        description='Plaid institutions sample'
     )
 
     return df
+
+
+if __name__ == '__main__':
+    get_institutions()
