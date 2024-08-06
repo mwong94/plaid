@@ -1,4 +1,5 @@
 from prefect import flow, task, get_run_logger
+from prefect.artifacts import create_table_artifact, create_markdown_artifact
 
 import os
 import json
@@ -74,4 +75,16 @@ def get_institutions() -> pd.DataFrame:
 
     client = create_client()
     df = _get_institutions(client)
+
+    create_table_artifact(
+        key='institutions',
+        table=df.to_dict(),
+        description='Plaid institutions'
+    )
+    create_markdown_artifact(
+        key='institutions',
+        markdown=df.sample(10).to_markdown(),
+        description='Plaid institutions MD sample'
+    )
+
     return df
