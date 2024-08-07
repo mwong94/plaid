@@ -1,13 +1,14 @@
 from prefect import flow, task, get_run_logger
+from prefect.variables import Variable
 from prefect.artifacts import create_table_artifact, create_markdown_artifact
+from prefect_snowflake.database import SnowflakeConnector
+from snowflake.connector.pandas_tools import write_pandas, pd_writer
 
 import os
-import json
 import pandas as pd
 from datetime import datetime
 
 from utils import RateLimiter, cast_to_string
-from snowflake_client import SnowflakeClient
 
 import plaid
 from plaid.api import plaid_api
@@ -42,7 +43,7 @@ def create_client() -> plaid_api.PlaidApi:
 
 
 @task(retries=5)
-def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
+def _get_institutions(client = plaid_api.PlaidApi, debug: bool = False) -> pd.DataFrame:
     logger = get_run_logger()
     logger.debug('_get_institutions()')
 
@@ -64,41 +65,44 @@ def _get_institutions(client = plaid_api.PlaidApi) -> pd.DataFrame:
 
             logger.debug(f'{len(institutions)} / {total} (offset: {offset})')
             offset = len(institutions)
+        if debug:
+            break
 
     df = pd.DataFrame(institutions)
 
     return df
 
 
-@task
-def upload_df(df: pd.DataFrame, schema: str, table: str, if_exists: str = 'append') -> None:
-    snowflake_client = SnowflakeClient(
-        os.getenv('SNOWFLAKE_ACCOUNT'),
-        os.getenv('SNOWFLAKE_USERNAME'),
-        os.getenv('SNOWFLAKE_PASSWORD'),
-        os.getenv('SNOWFLAKE_DATABASE'),
-        os.getenv('SNOWFLAKE_WAREHOUSE')
-    )
-    snowflake_client.upload_df(df, 'raw', 'institutions', 'append')
+@task(retries=2)
+def upload_df(df: pd.DataFrame, schema: str, table: str, delete: bool = False) -> None:
+    with SnowflakeConnector.load('sf1').get_connection() as conn:
+        if delete:
+            with conn.cursor() as cur:
+                cur.execute(f'delete from {schema}.{table}')
+        write_pandas(
+            conn,
+            df,
+            table,
+            database='PLAID',
+            schema=schema,
+            quote_identifiers=False
+        )
 
 
-@flow
-def get_institutions() -> pd.DataFrame:
+@flow(name='PlaidInstitutions')
+def get_institutions(debug: bool = False, delete: bool = False) -> None:
     logger = get_run_logger()
     logger.debug('get_institutions()')
 
     client = create_client()
 
-    df = _get_institutions(client)
+    df = _get_institutions(client, debug)
     df['loaded_at'] = datetime.utcnow()
     for col in df.columns:
         df[col] = df[col].apply(cast_to_string)
     df = df[['institution_id', 'name', 'products', 'country_codes', 'routing_numbers', 'oauth', 'loaded_at']]
     
-    upload_df(
-        df,
-        'raw', 'institutions', 'append'
-        )
+    upload_df(df, 'raw', 'institutions', True)
 
     create_markdown_artifact(
         key='institutions',
@@ -106,8 +110,6 @@ def get_institutions() -> pd.DataFrame:
         description='Plaid institutions sample'
     )
 
-    return df
-
 
 if __name__ == '__main__':
-    get_institutions()
+    get_institutions(debug=True, delete=True)
