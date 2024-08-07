@@ -22,9 +22,7 @@ def _get_accounts(client: plaid_api.PlaidApi, items: pd.DataFrame) -> pd.DataFra
             access_token=access_token
         )
         response = client.accounts_get(ag_request).to_dict()
-        accounts += response['accounts']
-    
-        for account in accounts:
+        for account in response['accounts']:
             row = {
                 'account_id': account['account_id'],
                 'balance_available': account['balances']['available'],
