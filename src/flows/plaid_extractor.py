@@ -89,7 +89,7 @@ def upload_df(df: pd.DataFrame, schema: str, table: str, delete: bool = False) -
         )
 
 
-@flow(name='PlaidInstitutions')
+@flow
 def get_institutions(debug: bool = False, delete: bool = False) -> None:
     logger = get_run_logger()
     logger.debug('get_institutions()')
