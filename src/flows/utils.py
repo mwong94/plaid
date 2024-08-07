@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from time import sleep
 import json
 
@@ -18,3 +18,9 @@ def cast_to_string(v):
         return json.dumps(v)
     else:
         return v
+
+
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, (date, datetime)):
+            return obj.isoformat()
