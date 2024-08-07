@@ -5,8 +5,7 @@ import pandas as pd
 from datetime import datetime
 
 from utils import RateLimiter, cast_to_string
-from plaid_tasks import upload_df
-from blocks.plaid_client import PlaidClient
+from plaid_tasks import create_client, upload_df
 
 from plaid.api import plaid_api
 from plaid.model.accounts_get_request import AccountsGetRequest
@@ -19,11 +18,9 @@ from plaid.model.transactions_sync_request_options import TransactionsSyncReques
 
 
 @task(retries=5)
-def _get_institutions(debug: bool = False) -> pd.DataFrame:
+def _get_institutions(client: plaid_api.PlaidApi, debug: bool = False) -> pd.DataFrame:
     logger = get_run_logger()
     logger.debug('_get_institutions()')
-
-    client = PlaidClient().get_client()
 
     institutions = []
     offset = 0
@@ -62,7 +59,8 @@ def get_institutions(debug: bool = False, delete: bool = False) -> None:
     logger.debug('get_institutions()')
 
     # run tasks
-    df = _get_institutions(debug)
+    client = create_client()
+    df = _get_institutions(client, debug)
     upload_df(df, 'raw', 'institutions', True)
 
     # create artifacts for UI
