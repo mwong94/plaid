@@ -87,7 +87,7 @@ def _get_transactions(
 
 
 @flow
-def get_transactions(debug: bool = False, backfill: bool = False, delete: bool = False) -> None:
+def get_transactions(backfill: bool = False, delete: bool = False) -> None:
     # debug logging
     logger = get_run_logger()
     logger.debug('get_transactions()')
