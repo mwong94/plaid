@@ -57,8 +57,8 @@ def get_accounts(delete: bool = False) -> None:
     # run tasks
     client = create_client()
     items = get_items()
-    df = _get_accounts(client, items, delete)
-    upload_df(df, 'raw', 'accounts')
+    df = _get_accounts(client, items)
+    upload_df(df, 'raw', 'accounts', delete)
 
 
 if __name__ == '__main__':

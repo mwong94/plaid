@@ -55,8 +55,8 @@ def get_institutions(debug: bool = False, delete: bool = False) -> None:
 
     # run tasks
     client = create_client()
-    df = _get_institutions(client, debug, delete)
-    upload_df(df, 'raw', 'institutions')
+    df = _get_institutions(client, debug)
+    upload_df(df, 'raw', 'institutions', delete)
 
     # create artifacts for UI
     create_markdown_artifact(
