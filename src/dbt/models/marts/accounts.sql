@@ -1,20 +1,20 @@
 select
     account_id
     , i.name as bank_name
-    , balance_available
-    , balance_current
-    , balance_limit
-    , balance_iso_currency_code
-    , balance_unofficial_currency_code
-    , mask
-    , name
-    , official_name
-    , persistent_account_id
-    , type
-    , subtype
-    , loaded_at
+    , a.balance_available
+    , a.balance_current
+    , a.balance_limit
+    , a.balance_iso_currency_code
+    , a.balance_unofficial_currency_code
+    , a.mask
+    , a.name
+    , a.official_name
+    , a.persistent_account_id
+    , a.type
+    , a.subtype
+    , a.loaded_at
 
-from {{ source('plaid', 'accounts') }} as a
+from {{ source('plaid', a.'accounts') }} as a
 
 left outer join {{ ref('stg_institutions') }} as i
 on a.institution_id = i.institution_id
