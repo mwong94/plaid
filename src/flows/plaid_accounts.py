@@ -14,7 +14,7 @@ from plaid.model.accounts_get_request_options import AccountsGetRequestOptions
 
 @task(retries=5)
 def _get_accounts(client: plaid_api.PlaidApi, items: pd.DataFrame) -> pd.DataFrame:
-    accounts = []
+    rows = []
     for _, row in items.iterrows():
         access_token = row['ACCESS_TOKEN']
 
@@ -22,26 +22,25 @@ def _get_accounts(client: plaid_api.PlaidApi, items: pd.DataFrame) -> pd.DataFra
             access_token=access_token
         )
         response = client.accounts_get(ag_request).to_dict()
-        assert response['accounts'] is not None
         accounts += response['accounts']
     
-    rows = []
-    for account in accounts:
-        row = {
-            'account_id': account['account_id'],
-            'balance_available': account['balances']['available'],
-            'balance_current': account['balances']['current'],
-            'balance_limit': account['balances']['limit'],
-            'balance_iso_currency_code': account['balances']['iso_currency_code'],
-            'balance_unofficial_currency_code': account['balances']['unofficial_currency_code'],
-            'mask': account['mask'],
-            'name': account['name'],
-            'official_name': account['official_name'],
-            'persistent_account_id': account['persistent_account_id'] if 'persistent_account_id' in account.keys() else None,
-            'type': account['type'],
-            'subtype': account['subtype']
-        }
-        rows.append(row)
+        for account in accounts:
+            row = {
+                'account_id': account['account_id'],
+                'balance_available': account['balances']['available'],
+                'balance_current': account['balances']['current'],
+                'balance_limit': account['balances']['limit'],
+                'balance_iso_currency_code': account['balances']['iso_currency_code'],
+                'balance_unofficial_currency_code': account['balances']['unofficial_currency_code'],
+                'mask': account['mask'],
+                'name': account['name'],
+                'official_name': account['official_name'],
+                'persistent_account_id': account['persistent_account_id'] if 'persistent_account_id' in account.keys() else None,
+                'type': account['type'],
+                'subtype': account['subtype'],
+                'institution_id': row['INSTITUTION_ID']
+            }
+            rows.append(row)
     df = pd.DataFrame(rows)
 
     return df
