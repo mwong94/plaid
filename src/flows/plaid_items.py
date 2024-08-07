@@ -1,4 +1,4 @@
-from prefect import task, get_run_logger
+from prefect import flow, get_run_logger
 from prefect_snowflake.database import SnowflakeConnector
 from snowflake.connector.pandas_tools import write_pandas
 from textwrap import dedent
