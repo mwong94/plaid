@@ -15,3 +15,10 @@ if __name__ == '__main__':
             timezone='US/Pacific'
         )
     )
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint='src/flows/plaid_items.py:add_item',
+    ).deploy(
+        name='plaid-items',
+        work_pool_name='default-work-pool'
+    )
