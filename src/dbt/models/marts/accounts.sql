@@ -14,7 +14,7 @@ select
     , a.subtype
     , a.loaded_at
 
-from {{ source('plaid', a.'accounts') }} as a
+from {{ source('plaid', 'accounts') }} as a
 
 left outer join {{ ref('stg_institutions') }} as i
 on a.institution_id = i.institution_id
