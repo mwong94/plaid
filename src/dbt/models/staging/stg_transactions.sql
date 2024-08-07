@@ -12,14 +12,6 @@ select
     , json['category_id']::text as category_id
     , json['check_number']::text as check_number
     , json['counterparties'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
-    , -- json['counterparties']['0'] as counterparties
     , json['date']::date as transaction_date
     , json['datetime']::timestamp_tz as datetime
     , json['iso_currency_code']::text as iso_currency_code
