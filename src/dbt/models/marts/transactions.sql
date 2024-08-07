@@ -1,6 +1,7 @@
 select
     t.account_id
     , a.bank_name
+    , a.name as account_name
     , t.account_owner
     , t.amount
     , t.authorized_date
