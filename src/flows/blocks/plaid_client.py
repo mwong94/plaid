@@ -10,7 +10,6 @@ class PlaidClient(Block):
     secret: SecretStr
     version: str = '2020-09-14'
 
-
     def get_client(self):
         configuration = plaid.Configuration(
             host=plaid.Environment.Production,
