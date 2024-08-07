@@ -1,5 +1,5 @@
 select
-    account_id
+    a.account_id
     , i.name as bank_name
     , a.balance_available
     , a.balance_current
