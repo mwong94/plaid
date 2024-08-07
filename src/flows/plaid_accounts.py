@@ -15,8 +15,8 @@ from plaid.model.accounts_get_request_options import AccountsGetRequestOptions
 @task(retries=5)
 def _get_accounts(client: plaid_api.PlaidApi, items: pd.DataFrame) -> pd.DataFrame:
     rows = []
-    for _, row in items.iterrows():
-        access_token = row['ACCESS_TOKEN']
+    for _, item in items.iterrows():
+        access_token = item['ACCESS_TOKEN']
 
         ag_request = AccountsGetRequest(
             access_token=access_token
@@ -36,7 +36,7 @@ def _get_accounts(client: plaid_api.PlaidApi, items: pd.DataFrame) -> pd.DataFra
                 'persistent_account_id': account['persistent_account_id'] if 'persistent_account_id' in account.keys() else None,
                 'type': account['type'],
                 'subtype': account['subtype'],
-                'institution_id': row['INSTITUTION_ID']
+                'institution_id': item['INSTITUTION_ID']
             }
             rows.append(row)
     df = pd.DataFrame(rows)
