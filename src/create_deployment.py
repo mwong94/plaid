@@ -17,6 +17,17 @@ if __name__ == '__main__':
     )
     flow.from_source(
         source=SOURCE_REPO,
+        entrypoint='src/flows/plaid_accounts.py:get_accounts',
+    ).deploy(
+        name='plaid-accounts',
+        work_pool_name='default-work-pool',
+        schedule=CronSchedule(
+            cron='0 0 * * *',
+            timezone='US/Pacific'
+        )
+    )
+    flow.from_source(
+        source=SOURCE_REPO,
         entrypoint='src/flows/plaid_items.py:add_item',
     ).deploy(
         name='plaid-items',
