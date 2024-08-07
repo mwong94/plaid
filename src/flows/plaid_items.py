@@ -9,7 +9,7 @@ def add_item(item_id: str, access_token: str, institution_id: str, institution_n
     with SnowflakeConnector.load('sf1').get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(dedent('''
-                insert into items
+                insert into items(item_id, access_token, institution_id, institution_name)
                     values
                     (%(item_id)s, %(access_token)s, %(institution_id)s, %(institution_name)s);
                 '''), {
