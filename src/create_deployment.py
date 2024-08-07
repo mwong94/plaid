@@ -4,6 +4,7 @@ from prefect.client.schemas.schedules import CronSchedule
 SOURCE_REPO='https://github.com/mwong94/plaid.git'
 
 if __name__ == '__main__':
+    # PLAID INSTITUTIONS
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_institutions.py:get_institutions',
@@ -15,6 +16,8 @@ if __name__ == '__main__':
             timezone='US/Pacific'
         )
     )
+
+    # PLAID ACCOUNTS
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_accounts.py:get_accounts',
@@ -26,6 +29,8 @@ if __name__ == '__main__':
             timezone='US/Pacific'
         )
     )
+
+    # PLAID TRANSACTIONS
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_transactions.py:get_transactions',
@@ -37,6 +42,22 @@ if __name__ == '__main__':
             timezone='US/Pacific'
         )
     )
+
+    # DBT BUILD MODELS
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint='src/flows/dbt_build.py:dbt_build',
+    ).deploy(
+        name='dbt-build',
+        work_pool_name='default-work-pool',
+        schedule=CronSchedule(
+            cron='15 0 * * *',
+            timezone='US/Pacific'
+        )
+    )
+
+
+    # PLAID ITEMS - no schedule, run manually through UI
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_items.py:add_item',
