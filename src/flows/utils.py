@@ -10,3 +10,10 @@ class RateLimiter():
         duration = (datetime.utcnow() - self.start).total_seconds()
         sleep_time = max(0, self.min_time - duration)
         sleep(sleep_time)
+
+
+def cast_to_string(v):
+    if isinstance(v, list|dict):
+        return json.dumps(v)
+    else:
+        return v

@@ -6,7 +6,7 @@ import json
 import pandas as pd
 from datetime import datetime
 
-from utils import RateLimiter
+from utils import RateLimiter, cast_to_string
 from snowflake_client import SnowflakeClient
 
 import plaid
@@ -18,13 +18,6 @@ from plaid.model.institutions_get_request import InstitutionsGetRequest
 from plaid.model.institutions_get_request_options import InstitutionsGetRequestOptions
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
-
-
-def cast_to_string(v):
-    if isinstance(v, list|dict):
-        return json.dumps(v)
-    else:
-        return v
 
 
 @task(retries=2)
