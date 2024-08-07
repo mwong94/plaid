@@ -44,5 +44,3 @@ def upload_df(df: pd.DataFrame, schema: str, table: str, delete: bool = False) -
             schema=schema,
             quote_identifiers=False
         )
-
-
