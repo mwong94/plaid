@@ -1,11 +1,10 @@
 from prefect import flow, task, get_run_logger
 from prefect.artifacts import create_markdown_artifact
+from textwrap import dedent
 
 import pandas as pd
 from datetime import datetime
-from textwrap import dedent
 
-from utils import RateLimiter, cast_to_string
 from plaid_tasks import create_client, upload_df, get_items
 
 from plaid.api import plaid_api

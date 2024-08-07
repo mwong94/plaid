@@ -1,10 +1,10 @@
 from prefect import task, get_run_logger
 from prefect_snowflake.database import SnowflakeConnector
 from snowflake.connector.pandas_tools import write_pandas
+from textwrap import dedent
 
 import os
 import pandas as pd
-from textwrap import dedent
 
 import plaid
 from plaid.api import plaid_api
@@ -48,6 +48,8 @@ def get_items() -> pd.DataFrame:
 
 @task(retries=2)
 def upload_df(df: pd.DataFrame, schema: str, table: str, delete: bool = False) -> None:
+    if len(df) == 0:
+        return
     with SnowflakeConnector.load('sf1').get_connection() as conn:
         if delete:
             with conn.cursor() as cur:
