@@ -8,13 +8,9 @@ from utils import RateLimiter, cast_to_string
 from plaid_tasks import create_client, upload_df
 
 from plaid.api import plaid_api
-from plaid.model.accounts_get_request import AccountsGetRequest
-from plaid.model.accounts_get_request_options import AccountsGetRequestOptions
 from plaid.model.country_code import CountryCode
 from plaid.model.institutions_get_request import InstitutionsGetRequest
 from plaid.model.institutions_get_request_options import InstitutionsGetRequestOptions
-from plaid.model.transactions_sync_request import TransactionsSyncRequest
-from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
 
 
 @task(retries=5)
@@ -44,10 +40,9 @@ def _get_institutions(client: plaid_api.PlaidApi, debug: bool = False) -> pd.Dat
             break
 
     df = pd.DataFrame(institutions)
-    df['loaded_at'] = datetime.utcnow()
     for col in df.columns:
         df[col] = df[col].apply(cast_to_string)
-    df = df[['institution_id', 'name', 'products', 'country_codes', 'routing_numbers', 'oauth', 'loaded_at']]
+    df = df[['institution_id', 'name', 'products', 'country_codes', 'routing_numbers', 'oauth']]
 
     return df
 
