@@ -4,6 +4,7 @@ from snowflake.connector.pandas_tools import write_pandas
 
 import os
 import pandas as pd
+from textwrap import dedent
 
 import plaid
 from plaid.api import plaid_api
@@ -28,6 +29,21 @@ def create_client() -> plaid_api.PlaidApi:
 
     api_client = plaid.ApiClient(configuration)
     return plaid_api.PlaidApi(api_client)
+
+
+@task(retries=2)
+def get_items() -> pd.DataFrame:
+    logger = get_run_logger()
+    logger.debug('get_items()')
+    with SnowflakeConnector.load('sf1').get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(dedent('''
+                select *
+                from raw.items
+                qualify row_number() over(partition by institution_id order by loaded_at desc) = 1;
+            '''.strip()))
+            df = cur.fetch_pandas_all()
+    return df
 
 
 @task(retries=2)
