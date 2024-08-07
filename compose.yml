@@ -1,13 +1,13 @@
 services:
-  plaid-db:
-    container_name: plaid-db
-    image: postgres:16.3
-    env_file: .env
-    volumes:
-      - /data/plaid/db:/var/lib/postgresql/data
-    ports:
-      - 5432:5432
-    restart: unless-stopped
+  # plaid-db:
+  #   container_name: plaid-db
+  #   image: postgres:16.3
+  #   env_file: .env
+  #   volumes:
+  #     - /data/plaid/db:/var/lib/postgresql/data
+  #   ports:
+  #     - 5432:5432
+  #   restart: unless-stopped
   
   prefect-server:
     container_name: prefect-server
@@ -19,6 +19,7 @@ services:
       - /data/plaid/prefect:/home/prefect
     ports:
       - 4200:4200
+    restart: unless-stopped
   
   prefect-worker-1:
     container_name: prefect-worker-1
@@ -27,3 +28,4 @@ services:
       dockerfile: Dockerfile
     command: prefect worker start --pool default-work-pool
     env_file: .env
+    restart: unless-stopped
