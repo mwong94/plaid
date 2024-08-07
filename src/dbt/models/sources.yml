@@ -7,3 +7,4 @@ sources:
     tables:
       - name: accounts
       - name: transactions_json
+      - name: institutions
