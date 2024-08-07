@@ -1,0 +1,117 @@
+from prefect import flow, task, get_run_logger
+from prefect.artifacts import create_markdown_artifact
+from prefect_snowflake.database import SnowflakeConnector
+from textwrap import dedent
+
+from typing import Tuple
+import pandas as pd
+from datetime import datetime
+import json
+
+from utils import DateTimeEncoder
+from plaid_tasks import create_client, upload_df, get_items
+
+from plaid.api import plaid_api
+from plaid.model.transactions_sync_request import TransactionsSyncRequest
+
+
+def get_latest_cursor_or_none(institution_id: str) -> str:
+    with SnowflakeConnector.load('sf1').get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(dedent(f'''
+                select "CURSOR"
+                from cursors
+                where institution_id = '{institution_id}'
+                and cursor_type = 'transactions'
+                order by loaded_at desc
+                limit 1
+            '''.strip()))
+            df = cur.fetch_pandas_all()
+    cursor = df.iloc[0].CURSOR if len(df) >= 1 else ''
+    return cursor
+
+
+@task
+def _get_transactions(
+        client: plaid_api.PlaidApi,
+        items: pd.DataFrame,
+        backfill: bool = False
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    logger = get_run_logger()
+    logger.debug('_get_transactions()')
+
+    rows = []
+    cursor_rows = []
+    for _, row in items.iterrows():
+        logger.debug(row)
+        institution_id = row['INSTITUTION_ID']
+        access_token = row['ACCESS_TOKEN']
+        if backfill:
+            cursor = ''
+        else:
+            cursor = get_latest_cursor_or_none(institution_id)
+        logger.debug(cursor)
+
+        transactions = []
+        has_more = True
+
+        while has_more:
+            logger.info(f'{institution_id}, {cursor}')
+            request = TransactionsSyncRequest(
+                access_token=access_token,
+                cursor=cursor
+            )
+            response = client.transactions_sync(request).to_dict()
+
+            for transaction_type in ['added', 'modified', 'removed']:
+                for tmp in response[transaction_type]:
+                    transactions.append({
+                        'transaction_type': transaction_type,
+                        'jsondata': json.dumps(tmp, cls=DateTimeEncoder)
+                    })
+
+            has_more = response['has_more']
+            cursor = response['next_cursor']
+
+            logger.info(f'\ttransactions: {len(transactions)}')
+        logger.info(f'updating cursor: {institution_id}, {cursor}')
+
+        cursor_row = {
+            'institution_id': institution_id,
+            'cursor_type': 'transactions',
+            'cursor': cursor
+        }
+        cursor_rows.append(cursor_row)
+    
+    return pd.DataFrame(transactions), pd.DataFrame(cursor_rows)
+
+
+@flow
+def get_transactions(debug: bool = False, backfill: bool = False, delete: bool = False) -> None:
+    # debug logging
+    logger = get_run_logger()
+    logger.debug('get_transactions()')
+
+    # run tasks
+    client = create_client()
+    items = get_items()
+    transactions_df, cursor_df = _get_transactions(client, items, backfill=backfill)
+    upload_df(transactions_df, 'raw', 'transactions_json', delete)
+    upload_df(cursor_df, 'raw', 'cursors')
+
+    # create artifacts for UI
+    if len(transactions_df) > 0:
+        create_markdown_artifact(
+            key='transactions',
+            markdown=transactions_df.head().to_markdown(),
+            description='Plaid transactions sample'
+        )
+        create_markdown_artifact(
+            key='transactions-len',
+            markdown=str(len(transactions_df)),
+            description='Plaid transactions DataFrame length'
+        )
+
+
+if __name__ == '__main__':
+    get_transactions(backfill=False, delete=False)
