@@ -3,7 +3,7 @@ select
     , a.bank_name
     , a.name as account_name
     , t.account_owner
-    , try_to_decimal(t.amount) as amount
+    , try_to_decimal(t.amount::text, 9, 2) as amount
     , t.authorized_date
     , t.authorized_datetime
     , t.category_0
@@ -55,7 +55,7 @@ from {{ ref('stg_transactions') }} as t
 left outer join {{ ref('accounts') }} as a
 on t.account_id = a.account_id
 
-where t.merchant_entity_id not in (select distinct merchant_id from raw.merchant_filter)
-and t.merchant_name not in (select distinct merchant_name from raw.merchant_filter)
+where not t.merchant_entity_id in (select distinct merchant_id from {{ source('plaid', 'merchant_filter') }})
+and not t.merchant_name in (select distinct merchant_name from {{ source('plaid', 'merchant_filter') }})
 
 qualify row_number() over(partition by t.transaction_id order by t.loaded_at desc) = 1
