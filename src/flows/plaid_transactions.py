@@ -9,7 +9,7 @@ from datetime import datetime
 import json
 
 from utils import DateTimeEncoder
-from plaid_tasks import create_client, upload_df, get_items
+from plaid_tasks import create_client, upload_df, get_items, update_item_cursors
 
 from plaid.api import plaid_api
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
@@ -49,7 +49,7 @@ def _get_transactions(
             cursor = ''
         else:
             cursor = get_latest_cursor_or_none(item_id)
-        logger.debug(cursor)
+        logger.debug(f'cursor: {cursor}')
 
         transactions = []
         has_more = True
