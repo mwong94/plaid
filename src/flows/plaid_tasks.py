@@ -72,7 +72,7 @@ def update_item_cursors(df: pd.DataFrame) -> None:
         return
     with SnowflakeConnector.load('sf1').get_connection() as conn:
         with conn.cursor() as cur:
-            for _, row in df.iteritems():
+            for _, row in df.iterrows():
                 item_id = row['item_id']
                 cursor = row['cursor']
 
