@@ -43,6 +43,7 @@ def _get_transactions(
     for _, row in items.iterrows():
         logger.debug(row)
         institution_id = row['INSTITUTION_ID']
+        item_id = row['ITEM_ID']
         access_token = row['ACCESS_TOKEN']
         if backfill:
             cursor = ''
