@@ -10,6 +10,7 @@ import json
 
 from utils import DateTimeEncoder
 from plaid_tasks import create_client, upload_df, get_items, update_item_cursors
+from dbt_build import dbt_build
 
 from plaid.api import plaid_api
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
@@ -85,7 +86,7 @@ def _get_transactions(
 
 
 @flow
-def get_transactions(backfill: bool = False, delete: bool = False) -> None:
+def get_transactions(backfill: bool = False, delete: bool = False, dbt_build: bool = True) -> None:
     # debug logging
     logger = get_run_logger()
     logger.debug('get_transactions()')
@@ -109,6 +110,9 @@ def get_transactions(backfill: bool = False, delete: bool = False) -> None:
             markdown=str(len(transactions_df)),
             description='Plaid transactions DataFrame length'
         )
+
+    if dbt_build:
+        dbt_build()
 
 
 if __name__ == '__main__':
