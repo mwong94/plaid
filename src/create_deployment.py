@@ -50,10 +50,10 @@ if __name__ == '__main__':
     ).deploy(
         name='dbt-build',
         work_pool_name='default-work-pool',
-        schedule=CronSchedule(
-            cron='15 0 * * *',
-            timezone='US/Pacific'
-        )
+        # schedule=CronSchedule(
+        #     cron='15 0 * * *',
+        #     timezone='US/Pacific'
+        # )
     )
 
     # PLAID ITEMS - no schedule, run manually through UI
