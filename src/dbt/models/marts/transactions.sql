@@ -55,4 +55,7 @@ from {{ ref('stg_transactions') }} as t
 left outer join {{ ref('accounts') }} as a
 on t.account_id = a.account_id
 
+where t.merchant_entity_id not in (select distinct merchant_id from raw.merchant_filter)
+and t.merchant_name not in (select distinct merchant_name from raw.merchant_filter)
+
 qualify row_number() over(partition by t.transaction_id order by t.loaded_at desc) = 1
