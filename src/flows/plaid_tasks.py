@@ -63,3 +63,25 @@ def upload_df(df: pd.DataFrame, schema: str, table: str, delete: bool = False) -
             schema=schema,
             quote_identifiers=False
         )
+
+
+@task(retries=2)
+def update_item_cursors(df: pd.DataFrame) -> None:
+    logger = get_run_logger()
+    if len(df) == 0:
+        return
+    with SnowflakeConnector.load('sf1').get_connection() as conn:
+        with conn.cursor() as cur:
+            for _, row in df.iteritems():
+                item_id = row['item_id']
+                cursor = row['cursor']
+
+                logger.debug(f'updating cursor for item: {item_id}')
+                cur.execute(dedent('''
+                        update items
+                        set cursor = %(cursor)s
+                        where item_id = %(item_id)s;
+                    '''), {
+                        'item_id': item_id,
+                        'cursor': cursor
+                    })

@@ -16,16 +16,13 @@ from plaid.model.transactions_sync_request import TransactionsSyncRequest
 from plaid.model.transactions_sync_request_options import TransactionsSyncRequestOptions
 
 
-def get_latest_cursor_or_none(institution_id: str) -> str:
+def get_latest_cursor_or_none(item_id: str) -> str:
     with SnowflakeConnector.load('sf1').get_connection() as conn:
         with conn.cursor() as cur:
             cur.execute(dedent(f'''
-                select "CURSOR"
-                from cursors
-                where institution_id = '{institution_id}'
-                and cursor_type = 'transactions'
-                order by loaded_at desc
-                limit 1
+                select cursor
+                from items
+                where item_id = '{item_id}'
             '''.strip()))
             df = cur.fetch_pandas_all()
     cursor = df.iloc[0].CURSOR if len(df) >= 1 else ''
@@ -50,7 +47,7 @@ def _get_transactions(
         if backfill:
             cursor = ''
         else:
-            cursor = get_latest_cursor_or_none(institution_id)
+            cursor = get_latest_cursor_or_none(item_id)
         logger.debug(cursor)
 
         transactions = []
@@ -79,8 +76,7 @@ def _get_transactions(
         logger.info(f'updating cursor: {institution_id}, {cursor}')
 
         cursor_row = {
-            'institution_id': institution_id,
-            'cursor_type': 'transactions',
+            'item_id': row['ITEM_ID'],
             'cursor': cursor
         }
         cursor_rows.append(cursor_row)
@@ -99,7 +95,7 @@ def get_transactions(backfill: bool = False, delete: bool = False) -> None:
     items = get_items()
     transactions_df, cursor_df = _get_transactions(client, items, backfill=backfill)
     upload_df(transactions_df, 'raw', 'transactions_json', delete)
-    upload_df(cursor_df, 'raw', 'cursors')
+    update_item_cursors(cursor_df)
 
     # create artifacts for UI
     if len(transactions_df) > 0:
