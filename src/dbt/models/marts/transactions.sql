@@ -29,6 +29,7 @@ select
     , t.merchant_entity_id
     , t.merchant_name
     , t.name
+    , initcap(coalesce(t.merchant_name, t.name)) as description
     , t.payment_channel
     , t.payment_meta__by_order_of
     , t.payment_meta__payee
