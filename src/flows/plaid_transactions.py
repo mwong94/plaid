@@ -41,7 +41,6 @@ def _get_transactions(
     rows = []
     cursor_rows = []
     for _, row in items.iterrows():
-        logger.debug(row)
         institution_id = row['INSTITUTION_ID']
         item_id = row['ITEM_ID']
         access_token = row['ACCESS_TOKEN']
@@ -74,7 +73,7 @@ def _get_transactions(
             cursor = response['next_cursor']
 
             logger.info(f'\ttransactions: {len(transactions)}')
-        logger.info(f'updating cursor: {institution_id}, {cursor}')
+        logger.info(f'adding cursor to output: {item_id}, {cursor}')
 
         cursor_row = {
             'item_id': row['ITEM_ID'],
