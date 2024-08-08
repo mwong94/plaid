@@ -1,14 +1,4 @@
 services:
-  # plaid-db:
-  #   container_name: plaid-db
-  #   image: postgres:16.3
-  #   env_file: .env
-  #   volumes:
-  #     - /data/plaid/db:/var/lib/postgresql/data
-  #   ports:
-  #     - 5432:5432
-  #   restart: unless-stopped
-  
   prefect-server:
     container_name: prefect-server
     build:
@@ -29,3 +19,21 @@ services:
     command: prefect worker start --pool default-work-pool
     env_file: .env
     restart: unless-stopped
+  
+  metabase-db:
+    container_name: metabase-db
+    image: postgres:13.1-alpine
+    restart: unless-stopped
+    volumes:
+      - /data/metabase/db:/var/lib/postgresql/data
+    env_file: .env
+
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - 3333:3000
+    depends_on:
+      - metabase-db
