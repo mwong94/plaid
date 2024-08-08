@@ -8,3 +8,4 @@ sources:
       - name: accounts
       - name: transactions_json
       - name: institutions
+      - name: merchant_filter
