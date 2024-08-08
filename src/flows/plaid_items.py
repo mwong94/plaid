@@ -2,8 +2,12 @@ from prefect import flow, get_run_logger
 from prefect_snowflake.database import SnowflakeConnector
 from textwrap import dedent
 
+from utils import create_client
+
+from plaid.model.item_remove_request import ItemRemoveRequest
+
 @flow
-def add_item(item_id: str, access_token: str, institution_id: str, institution_name: str):
+def add_item(item_id: str, access_token: str, institution_id: str, institution_name: str) -> None:
     logger = get_run_logger()
     logger.debug('add_item()')
     with SnowflakeConnector.load('sf1').get_connection() as conn:
@@ -18,3 +22,16 @@ def add_item(item_id: str, access_token: str, institution_id: str, institution_n
                     'institution_id': institution_id,
                     'institution_name': institution_name
                 })
+
+
+@flow
+def remove_item(access_token: str) -> None:
+    logger = get_run_logger()
+    logger.debug('remove_item()')
+    
+    client = create_client()
+
+    request = ItemRemoveRequest(
+        access_token=access_token
+    )
+    response = client.item_remove(request)
