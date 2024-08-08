@@ -56,14 +56,13 @@ if __name__ == '__main__':
         )
     )
 
-
     # PLAID ITEMS - no schedule, run manually through UI
     flow.from_source(
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_items.py:add_item',
     ).deploy(
         name='add-item',
-        work_poofl_name='default-work-pool'
+        work_pool_name='default-work-pool'
     )
     flow.from_source(
         source=SOURCE_REPO,
