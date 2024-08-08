@@ -41,11 +41,6 @@ def _get_transactions(
     logger = get_run_logger()
     logger.debug('_get_transactions()')
 
-    if backfill:
-        options = TransactionsSyncRequestOptions(days_requested=730)
-    else:
-        options = TransactionsSyncRequestOptions(days_requested=90)
-
     rows = []
     cursor_rows = []
     for _, row in items.iterrows():
@@ -66,7 +61,7 @@ def _get_transactions(
             request = TransactionsSyncRequest(
                 access_token=access_token,
                 cursor=cursor,
-                options=options
+                options=TransactionsSyncRequestOptions(days_requested=730)
             )
             response = client.transactions_sync(request).to_dict()
 
