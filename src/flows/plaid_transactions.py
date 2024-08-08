@@ -1,6 +1,7 @@
 from prefect import flow, task, get_run_logger
 from prefect.artifacts import create_markdown_artifact
 from prefect_snowflake.database import SnowflakeConnector
+from prefect.deployments import run_deployment
 from textwrap import dedent
 
 from typing import Tuple
@@ -10,7 +11,6 @@ import json
 
 from utils import DateTimeEncoder
 from plaid_tasks import create_client, upload_df, get_items, update_item_cursors
-from dbt_build import dbt_build
 
 from plaid.api import plaid_api
 from plaid.model.transactions_sync_request import TransactionsSyncRequest
@@ -112,7 +112,7 @@ def get_transactions(backfill: bool = False, delete: bool = False, dbt_build: bo
         )
 
     if dbt_build:
-        dbt_build()
+        run_deployment('dbt-build/dbt-build')
 
 
 if __name__ == '__main__':
