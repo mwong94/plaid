@@ -9,7 +9,7 @@ if __name__ == '__main__':
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_institutions.py:get_institutions',
     ).deploy(
-        name='plaid-institutions',
+        name='institutions',
         work_pool_name='default-work-pool',
         schedule=CronSchedule(
             cron='0 0 1 * *',
@@ -22,7 +22,7 @@ if __name__ == '__main__':
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_accounts.py:get_accounts',
     ).deploy(
-        name='plaid-accounts',
+        name='accounts',
         work_pool_name='default-work-pool',
         schedule=CronSchedule(
             cron='0 0 * * *',
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_transactions.py:get_transactions',
     ).deploy(
-        name='plaid-transactions',
+        name='transactions',
         work_pool_name='default-work-pool',
         schedule=CronSchedule(
             cron='2 0 * * *',
@@ -62,6 +62,13 @@ if __name__ == '__main__':
         source=SOURCE_REPO,
         entrypoint='src/flows/plaid_items.py:add_item',
     ).deploy(
-        name='plaid-items',
+        name='add-item',
+        work_poofl_name='default-work-pool'
+    )
+    flow.from_source(
+        source=SOURCE_REPO,
+        entrypoint='src/flows/plaid_items.py:remove_item',
+    ).deploy(
+        name='remove-item',
         work_pool_name='default-work-pool'
     )
