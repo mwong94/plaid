@@ -2,7 +2,7 @@ from prefect import flow, get_run_logger
 from prefect_snowflake.database import SnowflakeConnector
 from textwrap import dedent
 
-from utils import create_client
+from plaid_tasks import create_client
 
 from plaid.model.item_remove_request import ItemRemoveRequest
 
@@ -31,7 +31,20 @@ def remove_item(access_token: str) -> None:
     
     client = create_client()
 
-    request = ItemRemoveRequest(
-        access_token=access_token
-    )
+    request = ItemRemoveRequest(access_token=access_token)
     response = client.item_remove(request)
+    logger.debug(response)
+
+    with SnowflakeConnector.load('sf1').get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(dedent('''
+                    update items
+                    set removed = True
+                    where access_token = %(access_token)s;
+                '''), {
+                    'access_token': access_token
+                })
+
+
+if __name__ == '__main__':
+    remove_item('access-production-10cd0fbf-85c0-4bb8-aae9-0883311d5f7b')
