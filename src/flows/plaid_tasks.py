@@ -40,6 +40,7 @@ def get_items() -> pd.DataFrame:
             cur.execute(dedent('''
                 select *
                 from raw.items
+                where removed = False
                 qualify row_number() over(partition by institution_id order by loaded_at desc) = 1;
             '''.strip()))
             df = cur.fetch_pandas_all()
