@@ -31,9 +31,13 @@ def remove_item(access_token: str) -> None:
     
     client = create_client()
 
-    request = ItemRemoveRequest(access_token=access_token)
-    response = client.item_remove(request)
-    logger.debug(response)
+    try:
+        request = ItemRemoveRequest(access_token=access_token)
+        response = client.item_remove(request)
+        logger.debug(response)
+    except Exception as e:
+        logger.debug('failed to remove item')
+        logger.debug(e)
 
     with SnowflakeConnector.load('sf1').get_connection() as conn:
         with conn.cursor() as cur:
