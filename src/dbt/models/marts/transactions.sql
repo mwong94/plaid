@@ -2,6 +2,7 @@ select
     t.account_id
     , a.bank_name
     , a.name as account_name
+    , a.type as account_type
     , t.account_owner
     , try_to_decimal(t.amount::text, 9, 2) as amount
     , t.authorized_date
