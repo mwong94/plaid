@@ -3,7 +3,7 @@ select
     , a.bank_name
     , a.name as account_name
     , t.account_owner
-    , t.amount::number(9,2) as amount
+    , try_to_decimal(t.amount) as amount
     , t.authorized_date
     , t.authorized_datetime
     , t.category_0
