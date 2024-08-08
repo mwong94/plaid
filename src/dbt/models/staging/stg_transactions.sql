@@ -50,5 +50,6 @@ select
     , json['transaction_type']::text as transaction_type
     , json['unofficial_currency_code']::text as unofficial_currency_code
     , json['website']::text as website
+    , loaded_at
 
 from {{ source('plaid', 'transactions_json') }}

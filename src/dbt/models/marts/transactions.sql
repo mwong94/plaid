@@ -54,3 +54,5 @@ from {{ ref('stg_transactions') }} as t
 
 left outer join {{ ref('accounts') }} as a
 on t.account_id = a.account_id
+
+qualify row_number() over(partition by t.transaction_id order by t.loaded_at desc) = 1
