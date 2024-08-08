@@ -56,6 +56,7 @@ left outer join {{ ref('accounts') }} as a
 on t.account_id = a.account_id
 
 where not t.merchant_entity_id in (select distinct merchant_id from {{ source('plaid', 'merchant_filter') }})
-and not t.merchant_name in (select distinct merchant_name from {{ source('plaid', 'merchant_filter') }})
+and not lower(t.merchant_name) in (select distinct merchant_name from {{ source('plaid', 'merchant_filter') }})
+and not lower(t.name) in (select distinct name from {{ source('plaid', 'merchant_filter') }})
 
 qualify row_number() over(partition by t.transaction_id order by t.loaded_at desc) = 1
