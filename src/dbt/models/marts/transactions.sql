@@ -46,6 +46,14 @@ select
     , t.personal_finance_category__detailed
     , t.personal_finance_category__primary
     , t.personal_finance_category_icon_url
+    , case
+        when t.personal_finance_category__confidence_level = 'LOW' then 'Other'
+        else initcap(replace(t.personal_finance_category__primary, '_', ' '))
+      end as category_primary
+    , case
+        when t.personal_finance_category__confidence_level = 'LOW' then 'Other'
+        else initcap(replace(t.personal_finance_category__detailed, '_', ' '))
+      end as category_detailed
     , t.transaction_code
     , t.transaction_id
     , t.transaction_type
