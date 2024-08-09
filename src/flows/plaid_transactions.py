@@ -39,7 +39,7 @@ def _get_transactions(
     logger = get_run_logger()
     logger.debug('_get_transactions()')
 
-    rows = []
+    transactions = []
     cursor_rows = []
     for _, row in items.iterrows():
         institution_id = row['INSTITUTION_ID']
@@ -51,7 +51,6 @@ def _get_transactions(
             cursor = get_latest_cursor_or_none(item_id)
         logger.debug(f'cursor: {cursor}')
 
-        transactions = []
         has_more = True
 
         while has_more:
