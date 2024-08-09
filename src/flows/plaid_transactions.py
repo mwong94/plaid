@@ -58,7 +58,7 @@ def _get_transactions(
             request = TransactionsSyncRequest(
                 access_token=access_token,
                 cursor=cursor,
-                options=TransactionsSyncRequestOptions(days_requested=730)
+                options=TransactionsSyncRequestOptions(days_requested=730, count=500)
             )
             response = client.transactions_sync(request).to_dict()
 
