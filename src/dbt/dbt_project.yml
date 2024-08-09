@@ -44,3 +44,6 @@ models:
     staging:
       +schema: raw
       +materialized: view
+    util:
+      +schema: util
+      +materialized: view

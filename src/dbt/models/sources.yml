@@ -9,3 +9,8 @@ sources:
       - name: transactions_json
       - name: institutions
       - name: merchant_filter
+  - name: plaid-util
+    database: plaid
+    schema: util
+    tables:
+      - name: calendar
