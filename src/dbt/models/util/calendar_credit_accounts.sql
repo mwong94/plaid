@@ -6,4 +6,4 @@ from {{ source('plaid-util', 'calendar') }} as cal
 
 join {{ ref('accounts') }} as a
 
-where a.type = 'credit';
+where a.type = 'credit'
